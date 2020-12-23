@@ -1,28 +1,28 @@
 # There will be two main sets of variables
 class paths:
-    BASE_URL =                   'www.avanza.se'
+    BASE_URL =                   'https://www.avanza.se'
     SOCKET_URL =                 'wss://www.avanza.se/_push/cometd'
-    POSITIONS_PATH =             '/_mobile/account/positions'
-    OVERVIEW_PATH =              '/_mobile/account/overview'
-    ACCOUNT_OVERVIEW_PATH =      '/_mobile/account/{0}/overview'
-    DEALS_AND_ORDERS_PATH =      '/_mobile/account/dealsandorders'
-    WATCHLISTS_PATH =            '/_mobile/usercontent/watchlist'
-    WATCHLISTS_ADD_DELETE_PATH = '/_api/usercontent/watchlist/{0}/orderbooks/{1}'
-    STOCK_PATH =                 '/_mobile/market/stock/{0}'
-    FUND_PATH =                  '/_mobile/market/fund/{0}'
-    CERTIFICATE_PATH =           '/_mobile/market/certificate/{0}'
-    INSTRUMENT_PATH =            '/_mobile/market/{0}/{1}'
-    ORDERBOOK_PATH =             '/_mobile/order/{0}'
-    ORDERBOOK_LIST_PATH =        '/_mobile/market/orderbooklist/{0}'
-    CHARTDATA_PATH =             '/_mobile/chart/orderbook/{0}'
-    ORDER_PLACE_DELETE_PATH =    '/_api/order'
-    ORDER_EDIT_PATH =            '/_api/order/{0}/{1}'
-    ORDER_GET_PATH =             '/_mobile/order/{0}'
-    SEARCH_PATH =                '/_mobile/market/search/{0}'
-    AUTHENTICATION_PATH =        '/_api/authentication/sessions/usercredentials'
-    TOTP_PATH =                  '/_api/authentication/sessions/totp'
-    INSPIRATION_LIST_PATH =      '/_mobile/marketing/inspirationlist/{0}'
-    TRANSACTIONS_PATH =          '/_mobile/account/transactions/{0}'
+    POSITIONS_PATH =             BASE_URL + '/_mobile/account/positions'
+    OVERVIEW_PATH =              BASE_URL + '/_mobile/account/overview'
+    ACCOUNT_OVERVIEW_PATH =      BASE_URL + '/_mobile/account/{0}/overview'
+    DEALS_AND_ORDERS_PATH =      BASE_URL + '/_mobile/account/dealsandorders'
+    WATCHLISTS_PATH =            BASE_URL + '/_mobile/usercontent/watchlist'
+    WATCHLISTS_ADD_DELETE_PATH = BASE_URL + '/_api/usercontent/watchlist/{0}/orderbooks/{1}'
+    STOCK_PATH =                 BASE_URL + '/_mobile/market/stock/{0}'
+    FUND_PATH =                  BASE_URL + '/_mobile/market/fund/{0}'
+    CERTIFICATE_PATH =           BASE_URL + '/_mobile/market/certificate/{0}'
+    INSTRUMENT_PATH =            BASE_URL + '/_mobile/market/{0}/{1}'
+    ORDERBOOK_PATH =             BASE_URL + '/_mobile/order/{0}'
+    ORDERBOOK_LIST_PATH =        BASE_URL + '/_mobile/market/orderbooklist/{0}'
+    CHARTDATA_PATH =             BASE_URL + '/_mobile/chart/orderbook/{0}'
+    ORDER_PLACE_DELETE_PATH =    BASE_URL + '/_api/order'
+    ORDER_EDIT_PATH =            BASE_URL + '/_api/order/{0}/{1}'
+    ORDER_GET_PATH =             BASE_URL + '/_mobile/order/{0}'
+    SEARCH_PATH =                BASE_URL + '/_mobile/market/search/{0}'
+    AUTHENTICATION_PATH =        BASE_URL + '/_api/authentication/sessions/usercredentials'
+    TOTP_PATH =                  BASE_URL + '/_api/authentication/sessions/totp'
+    INSPIRATION_LIST_PATH =      BASE_URL + '/_mobile/marketing/inspirationlist/{0}'
+    TRANSACTIONS_PATH =          BASE_URL + '/_mobile/account/transactions/{0}'
 
 class public:
     STOCK =               'stock'
@@ -80,4 +80,5 @@ class public:
     # Variables used
     MIN_INACTIVE_MINUTES = 30
     MAX_INACTIVE_MINUTES = 60 * 24
-    MAX_BACKOFF_MS=        2 * 60 * 1000
+    MAX_BACKOFF_MS =       2 * 60 * 1000
+    USER_AGENT =           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'

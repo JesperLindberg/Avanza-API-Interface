@@ -27,7 +27,7 @@ class socketInteraction:
 
         self._backOffTimestamps = {}
         self._socketHandshakeTimer = None
-        self._socketSubscriptions = [19002] #When connected, we sub to these
+        self._socketSubscriptions = ['/Avanza.QUOTES/19002'] #When connected, we sub to these
         self._socketMonitor = None
         self._socketLastMetaConnect = 0
         self._adviceTimeout = 30000

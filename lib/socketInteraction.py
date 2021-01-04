@@ -1,10 +1,6 @@
-import json
-import websocket
-import threading
+import json, websocket, threading, requests, logging
 from credentials import credentials
 from const import *
-import requests
-import logging
 from datetime import datetime
 
 """
@@ -55,11 +51,11 @@ class socketInteraction:
     def on_open(self):
         self.auth()
         if self._authenticated:
-            self.authSocket()
+            self.authSocket(True)
 
     def on_message(self, msg):
-        print('Message: ')
         msg = json.loads(msg)[0]
+        print(msg)
         channel = msg.get('channel')
         if channel == '/meta/handshake':
             if msg.get('successful'):
@@ -80,10 +76,13 @@ class socketInteraction:
                 self._pushSubscriptionId = None
                 # Schedule re-auth
                 print('Error: Repsone from websocket with handshake failed. \n Response: ' + msg)
-        if channel == '/meta/connect':
-            if msg.get('successful') and \
-               (not msg.get('advice') or \
-               (msg.get('advice').get('reconnect') != 'none' and not msg.get('advice').get('interval') < 0)):
+        elif channel == '/meta/connect':
+            if msg.get('successful') and (\
+                    (not msg.get('advice') or \
+                        (msg.get('advice').get('reconnect') != 'none' and \
+                        (not msg.get('advice').get('interval') < 0))
+                    )
+                ):
                 self._socketLastMetaConnect = datetime.now()
                 data = {
                     'channel': '/meta/connect',
@@ -96,16 +95,17 @@ class socketInteraction:
                     self._socketConnected = True
                     for substring in self._socketSubscriptions:
                         self.subscribe(substring)
-                        self._socketSubscriptions.remove(substring)
-                elif self._socketClientId:
-                    self.authSocket(True)
-        print(msg)
-
-
-
+            elif self._socketClientId:
+                self.authSocket(True)
+        elif channel == '/meta/subscribe':
+            self._socketSubscriptions[msg.get('subscription')] = self._socketClientId
+        else:
+            print("Websocket message debug-info: \n")
+            print(msg)
 
     def on_error(self, error):
         # Also log this error!
+        print('ERROR: \n')
         print(error)
     
     def on_close(self):
@@ -121,6 +121,7 @@ class socketInteraction:
         self._socketMessageCount += 1
 
     def subscribe(self, subscriptionString):
+        print('subbed')
         if(self._socketConnected):
             self.socket_send({
                 'channel': '/meta/subscribe',
@@ -195,13 +196,11 @@ class socketInteraction:
             print('No user matching the account information')
             print('Response from server: ' + response.text)
     
-    def authSocket(self, *args):
-        # args[0] If handshake is needed
-        if (not self._socketClientId  or args[0]):
+    def authSocket(self, handshake = False):
+        if (not self._socketClientId  or handshake):
             self._socketClientId = None
             self._socketConnected = False
             if (self._pushSubscriptionId):
-                # Clear schedule for handshake and set new schedule
                 data = {
                     'advice': {
                         'timeout': '60000',
@@ -215,7 +214,7 @@ class socketInteraction:
                     'version': '1.0'
                 }
                 self.socket_send(data)
-        elif self._socketClientId:
+        elif self._socketClientId != None:
             data = {
                 'channel': '/meta/connect',
                 'clientId': self._socketClientId,
@@ -226,5 +225,3 @@ class socketInteraction:
     
 
 test = socketInteraction()
-#test.auth()
-#test.authSocket()

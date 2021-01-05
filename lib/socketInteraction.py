@@ -15,7 +15,7 @@ class socketInteraction:
         self._socket = None
         self._authenticated = False
         self._authenticationSession = None
-        self._authenticationTimeout = public.MAX_INACTIVE_MINUTES
+        self._authenticationTimeoutMinutes = public.MAX_INACTIVE_MINUTES
         self._pushSubscriptionId = None
         self._reauthentication = None
         self._customerId = None
@@ -23,7 +23,7 @@ class socketInteraction:
 
         self._backOffTimestamps = {}
         self._socketHandshakeTimer = None
-        self._socketSubscriptions = ['/Avanza.QUOTES/19002'] #When connected, we sub to these
+        self._socketSubscriptions = ['/quotes/19002'] #When connected, we sub to these
         self._socketMonitor = None
         self._socketLastMetaConnect = 0
         self._adviceTimeout = 30000
@@ -38,22 +38,22 @@ class socketInteraction:
         }
 
         self._socket = websocket.WebSocketApp(paths.SOCKET_URL,
-                                            on_message = self.on_message,
-                                            on_error = self.on_error,
-                                            on_close = self.on_close,
-                                            on_open = self.on_open)
+                                            on_message = self._on_message,
+                                            on_error = self._on_error,
+                                            on_close = self._on_close,
+                                            on_open = self._on_open)
 
         socketThread = threading.Thread(name = "socketThread",
                                         target = self._socket.run_forever()
                                         ).start()
         
 
-    def on_open(self):
-        self.auth()
+    def _on_open(self):
+        self._auth()
         if self._authenticated:
-            self.authSocket(True)
+            self._authSocket(True)
 
-    def on_message(self, msg):
+    def _on_message(self, msg):
         msg = json.loads(msg)[0]
         print(msg)
         channel = msg.get('channel')
@@ -67,9 +67,9 @@ class socketInteraction:
                     'connectionType': 'websocket',
                     'id': self._socketMessageCount,
                 }
-                self.socket_send(data)
+                self._socket_send(data)
             elif msg.get('advice').get('reconnect') == 'retry' and self._authenticated:
-                self.authSocket(True)
+                self._authSocket(True)
             else:
                 self._socketClientId = None
                 self._socketConnected = False
@@ -90,47 +90,46 @@ class socketInteraction:
                     'connectionType': 'websocket',
                     'id': self._socketMessageCount
                 }
-                self.socket_send(data)
+                self._socket_send(data)
                 if not self._socketConnected:
                     self._socketConnected = True
                     for substring in self._socketSubscriptions:
-                        self.subscribe(substring)
+                        self._subscribe(substring)
             elif self._socketClientId:
-                self.authSocket(True)
+                self._authSocket(True)
         elif channel == '/meta/subscribe':
             self._socketSubscriptions[msg.get('subscription')] = self._socketClientId
         else:
             print("Websocket message debug-info: \n")
             print(msg)
 
-    def on_error(self, error):
+    def _on_error(self, error):
         # Also log this error!
         print('ERROR: \n')
         print(error)
     
-    def on_close(self):
+    def _on_close(self):
         # Set class variables to NA/0/False
         print("WARNING: FUNCTION NOT IMPLEMENTED!")
         print(self._socket._get_close_args())
         print(self._socket.header())
 
-    def socket_send(self, data):
+    def _socket_send(self, data):
         data = json.dumps([data])
         print(data)
         self._socket.send(data)
         self._socketMessageCount += 1
 
-    def subscribe(self, subscriptionString):
-        print('subbed')
+    def _subscribe(self, subscriptionString):
         if(self._socketConnected):
-            self.socket_send({
+            self._socket_send({
                 'channel': '/meta/subscribe',
                 'clientId': self._socketClientId,
                 'id': self._socketMessageCount,
                 'subscription': subscriptionString
             })
     
-    def auth(self):
+    def _auth(self):
         payload = self._credentials.getAuth()
 
         # Expected return from getAuth():
@@ -140,7 +139,7 @@ class socketInteraction:
         #}
         #return data
 
-        payload['maxInactiveMinutes'] = self._authenticationTimeout
+        payload['maxInactiveMinutes'] = self._authenticationTimeoutMinutes
         payload = json.dumps(payload)
         header = self._header
         header.update({'Content-Length' : str(len(payload))})
@@ -178,11 +177,9 @@ class socketInteraction:
                     self._authenticationSession = json.loads(response.text).get('authenticationSession')
                     self._pushSubscriptionId    = json.loads(response.text).get('pushSubscriptionId')
                     self._customerId            = json.loads(response.text).get('customerId')
+                    # Schedule reauth after timout limit minus one minute times 60 to get it in seconds.
+                    threading.Timer((self._authenticationTimeoutMinutes - 1 )*60, self._auth)
                     print("Authenticated!")
-
-                    """
-                    Schedule re-auth!
-                    """
 
                 else:
                     self._authenticated = False
@@ -196,7 +193,7 @@ class socketInteraction:
             print('No user matching the account information')
             print('Response from server: ' + response.text)
     
-    def authSocket(self, handshake = False):
+    def _authSocket(self, handshake = False):
         if (not self._socketClientId  or handshake):
             self._socketClientId = None
             self._socketConnected = False
@@ -213,7 +210,7 @@ class socketInteraction:
                     'supportedConnectionTypes': ['websocket', 'long-polling', 'callback-polling'],
                     'version': '1.0'
                 }
-                self.socket_send(data)
+                self._socket_send(data)
         elif self._socketClientId != None:
             data = {
                 'channel': '/meta/connect',
@@ -221,7 +218,7 @@ class socketInteraction:
                 'connectionType': 'websocket',
                 'id': self._socketMessageCount
             }
-            self.socket_send(data)
+            self._socket_send(data)
     
 
 test = socketInteraction()

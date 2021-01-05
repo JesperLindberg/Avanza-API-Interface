@@ -178,7 +178,7 @@ class socketInteraction:
                     self._pushSubscriptionId    = json.loads(response.text).get('pushSubscriptionId')
                     self._customerId            = json.loads(response.text).get('customerId')
                     # Schedule reauth after timout limit minus one minute times 60 to get it in seconds.
-                    threading.Timer((self._authenticationTimeoutMinutes - 1 )*60, self._auth)
+                    threading.Timer((self._authenticationTimeoutMinutes - 1 )*60, self._auth).start()
                     print("Authenticated!")
 
                 else:

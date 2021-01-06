@@ -235,17 +235,11 @@ class socketInteraction:
         if(response):
             print(response.text)
         
-a = socketInteraction.__new__(socketInteraction)
-print("a done!")
-t = threading.Thread(name = "test", target = a.__init__)
-print("thread created")
-t.start()
-print("starting socket:")
-#a.test()
+socket = socketInteraction.__new__(socketInteraction)
+t = threading.Thread(name = "test", target = socket.__init__).start()
 waitForConnection = True
 while waitForConnection:
-    if a.connected():
+    if socket.connected():
         waitForConnection = False
-print(threading.enumerate())
-print('have init')
-a.getInspirationLists()
+
+socket.getInspirationLists()

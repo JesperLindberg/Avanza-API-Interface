@@ -236,7 +236,7 @@ class socketInteraction:
             print(response.text)
         
 socket = socketInteraction.__new__(socketInteraction)
-t = threading.Thread(name = "test", target = socket.__init__).start()
+threading.Thread(name = "socketThread", target = socket.__init__).start()
 waitForConnection = True
 while waitForConnection:
     if socket.connected():

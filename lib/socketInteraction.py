@@ -43,10 +43,12 @@ class socketInteraction:
                                             on_close = self._on_close,
                                             on_open = self._on_open)
 
-        socketThread = threading.Thread(name = "socketThread",
+        self.socketThread = threading.Thread(name = str(self)+"_socketThread",
                                         target = self._socket.run_forever()
-                                        ).start()
+                                        )
         
+    def connected(self):
+        return self._authenticated
 
     def _on_open(self):
         self._auth()
@@ -143,7 +145,6 @@ class socketInteraction:
         payload = json.dumps(payload)
         header = self._header
         header.update({'Content-Length' : str(len(payload))})
-
         response = requests.request('POST', paths.AUTHENTICATION_PATH, headers=header, data=payload)
         # Expected return: {'twoFactorLogin':{'transactionId':'someID','method':'TOTP'}}
 
@@ -219,6 +220,32 @@ class socketInteraction:
                 'id': self._socketMessageCount
             }
             self._socket_send(data)
-    
 
-test = socketInteraction()
+    def call(self, method = 'GET', path = '', data = {}):
+        header = {
+            'X-AuthenticationSession': self._authenticationSession,
+            'X-SecurityToken': self._securityToken
+            }
+        payload = json.dumps(data)
+        response = requests.request(method, path, headers=header, data=payload)
+        return response
+    
+    def getInspirationLists(self):
+        response = self.call('GET', paths.INSPIRATION_LIST_PATH.replace('{0}', ''))
+        if(response):
+            print(response.text)
+        
+a = socketInteraction.__new__(socketInteraction)
+print("a done!")
+t = threading.Thread(name = "test", target = a.__init__)
+print("thread created")
+t.start()
+print("starting socket:")
+#a.test()
+waitForConnection = True
+while waitForConnection:
+    if a.connected():
+        waitForConnection = False
+print(threading.enumerate())
+print('have init')
+a.getInspirationLists()

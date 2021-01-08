@@ -42,7 +42,7 @@ class socketInteraction:
                                             on_error = self._on_error,
                                             on_close = self._on_close,
                                             on_open = self._on_open)
-        self._socket.enableTrace(True)
+        #self._socket.enableTrace(True)
 
         self.socketThread = threading.Thread(name = str(self)+"_socketThread",
                                         target = self._socket.run_forever()
@@ -51,12 +51,12 @@ class socketInteraction:
     def connected(self):
         return self._authenticated
 
-    def _on_open(self, ws):
+    def _on_open(self):
         self._auth()
         if self._authenticated:
             self._authSocket(True)
 
-    def _on_message(self, ws, msg):
+    def _on_message(self, msg):
         msg = json.loads(msg)[0]
         print(msg)
         channel = msg.get('channel')
@@ -106,12 +106,12 @@ class socketInteraction:
             print("Websocket message debug-info: \n")
             print(msg)
 
-    def _on_error(self, ws, error):
+    def _on_error(self, error):
         # Also log this error!
         print('ERROR: \n')
         print(error)
     
-    def _on_close(self, ws):
+    def _on_close(self):
         # Set class variables to NA/0/False
         print("WARNING: FUNCTION NOT IMPLEMENTED!")
         print(self._socket._get_close_args())

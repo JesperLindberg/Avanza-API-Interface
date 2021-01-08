@@ -222,7 +222,7 @@ class socketInteraction:
             }
             self._socket_send(data)
 
-    def call(self, method = 'GET', path = '', data = {}):
+    def _call(self, method = 'GET', path = '', data = {}):
         header = {
             'X-AuthenticationSession': self._authenticationSession,
             'X-SecurityToken': self._securityToken
@@ -232,10 +232,15 @@ class socketInteraction:
         return response
     
     def getInspirationLists(self):
-        response = self.call('GET', paths.INSPIRATION_LIST_PATH.replace('{0}', ''))
-        if(response):
+        response = self._call('GET', paths.INSPIRATION_LIST_PATH.replace('{0}', ''))
+        if response:
             print(response.text)
-        
+
+    def getWatchlists(self):
+        response = self._call('GET', paths.WATCHLISTS_PATH)
+        if response:
+            print(response.text)
+
 socket = socketInteraction.__new__(socketInteraction)
 threading.Thread(name = "socketThread", target = socket.__init__).start()
 waitForConnection = True
@@ -243,4 +248,5 @@ while waitForConnection:
     if socket.connected():
         waitForConnection = False
 
-socket.getInspirationLists()
+#socket.getInspirationLists()
+socket.getWatchlists()

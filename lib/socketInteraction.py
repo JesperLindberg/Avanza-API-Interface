@@ -36,12 +36,13 @@ class socketInteraction:
             'Content-Type': 'application/json',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36'
         }
-
+        
         self._socket = websocket.WebSocketApp(paths.SOCKET_URL,
                                             on_message = self._on_message,
                                             on_error = self._on_error,
                                             on_close = self._on_close,
                                             on_open = self._on_open)
+        self._socket.enableTrace(True)
 
         self.socketThread = threading.Thread(name = str(self)+"_socketThread",
                                         target = self._socket.run_forever()

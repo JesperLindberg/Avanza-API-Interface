@@ -50,12 +50,12 @@ class socketInteraction:
     def connected(self):
         return self._authenticated
 
-    def _on_open(self):
+    def _on_open(self, ws):
         self._auth()
         if self._authenticated:
             self._authSocket(True)
 
-    def _on_message(self, msg):
+    def _on_message(self, ws, msg):
         msg = json.loads(msg)[0]
         print(msg)
         channel = msg.get('channel')
@@ -105,12 +105,12 @@ class socketInteraction:
             print("Websocket message debug-info: \n")
             print(msg)
 
-    def _on_error(self, error):
+    def _on_error(self, ws, error):
         # Also log this error!
         print('ERROR: \n')
         print(error)
     
-    def _on_close(self):
+    def _on_close(self, ws):
         # Set class variables to NA/0/False
         print("WARNING: FUNCTION NOT IMPLEMENTED!")
         print(self._socket._get_close_args())

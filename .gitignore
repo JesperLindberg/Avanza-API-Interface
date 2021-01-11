@@ -1,3 +1,4 @@
 lib/credentials.py
 lib/__pycache__
 lib/test.py
+data/

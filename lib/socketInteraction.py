@@ -1,4 +1,4 @@
-import json, websocket, threading, requests, logging
+import json, websocket, threading, requests, logging, os.path
 from credentials import credentials
 from const import *
 from datetime import datetime
@@ -31,6 +31,8 @@ class socketInteraction:
         self._socketMessageCount = 1
         self._socketClientId = None
 
+        self._pathToSaveData = 'data/'
+
         self._header = {
             'Accept': '*/*',
             'Content-Type': 'application/json',
@@ -42,12 +44,22 @@ class socketInteraction:
                                             on_error = self._on_error,
                                             on_close = self._on_close,
                                             on_open = self._on_open)
-        #self._socket.enableTrace(True)
+
+        self._create_files()
 
         self.socketThread = threading.Thread(name = str(self)+"_socketThread",
                                         target = self._socket.run_forever()
                                         )
         
+    def _create_files(self):
+        if not os.path.exists(self._pathToSaveData):
+            os.mkdir(self._pathToSaveData)
+        for name in self._socketSubscriptions:
+            name = name.split('/')
+            file_ = self._pathToSaveData + str(datetime.date(datetime.now())) + '-' + name[1] + '-' + name[2]
+            if not os.path.isfile(file_):
+                open(file_, 'a').close()
+
     def connected(self):
         return self._authenticated
 
@@ -58,9 +70,27 @@ class socketInteraction:
 
     def _on_message(self, msg):
         msg = json.loads(msg)[0]
-        print(msg)
         channel = msg.get('channel')
-        if channel == '/meta/handshake':
+        if '/quotes/' in channel:
+            quote = msg.get('data')
+            quote['timeReceived'] = datetime.now().strftime("%H:%M:%S")
+
+            file_ = self._pathToSaveData +\
+                    str(datetime.date(datetime.now())) +\
+                    '-' + 'quotes' + '-' +\
+                    channel.split('/')[-1]
+
+            try:
+                txt = open(file_, 'a')
+                txt.write(str(quote) + '\n')
+                txt.close()
+            except:
+                self._create_files()
+                txt = open(file_, 'a')
+                txt.write(str(quote) + '\n')
+                txt.close()
+            
+        elif channel == '/meta/handshake':
             if msg.get('successful'):
                 self._socketClientId = msg.get('clientId')
                 data = {
@@ -119,7 +149,6 @@ class socketInteraction:
 
     def _socket_send(self, data):
         data = json.dumps([data])
-        print(data)
         self._socket.send(data)
         self._socketMessageCount += 1
 
@@ -249,4 +278,4 @@ while waitForConnection:
         waitForConnection = False
 
 #socket.getInspirationLists()
-socket.getWatchlists()
+#socket.getWatchlists()

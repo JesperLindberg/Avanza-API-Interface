@@ -15,7 +15,10 @@ class socketInteraction:
 
     def __init__(self, *args):
         self._args = args
-        self._credentials = credentials()
+        try:
+            self._credentials = credentials()
+        except:
+            pass
         self._socket = None
         self._authenticated = False
         self._authenticationSession = None

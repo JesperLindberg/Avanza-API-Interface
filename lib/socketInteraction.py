@@ -1,5 +1,8 @@
-import json, websocket, threading, requests, logging, os.path
-from credentials import credentials
+import json, websocket, threading, requests, logging, os.path, sys, mintotp
+try:
+    from credentials import credentials
+except:
+    print("No credentials class found, credentials should be supplied by arugemtns when executing this file!")
 from const import *
 from datetime import datetime
 
@@ -10,7 +13,8 @@ Implement logging to file.
 
 class socketInteraction:
 
-    def __init__(self):
+    def __init__(self, *args):
+        self._args = args
         self._credentials = credentials()
         self._socket = None
         self._authenticated = False
@@ -70,6 +74,7 @@ class socketInteraction:
 
     def _on_message(self, msg):
         msg = json.loads(msg)[0]
+        print(msg)
         channel = msg.get('channel')
         if '/quotes/' in channel:
             quote = msg.get('data')
@@ -162,7 +167,17 @@ class socketInteraction:
             })
     
     def _auth(self):
-        payload = self._credentials.getAuth()
+        if len(self._args) > 1:
+            print("we got args!")
+            payload = {
+                'username':self._args[1],
+                'password':self._args[2]
+            }
+
+        else:
+            print("No args!")
+            payload = self._credentials.getAuth()
+        
 
         # Expected return from getAuth():
         # data = {
@@ -183,14 +198,20 @@ class socketInteraction:
             transactionID = response.get('twoFactorLogin').get('transactionId')
             if(response.get('twoFactorLogin').get('method') == 'TOTP'):
                 # Time to provide TOTP for 2FA
-                payload = {
+                if len(self._args) > 1:
+                    payload = {
                     'method': 'TOTP',
-                    'totpCode': str(self._credentials.getTOTP())
-                    # Expected return from getTOTP():
-                    # import mintotp
-                    # return mintotp.totp(self.totp)
-                    # Where self.totp is the totp code given by Avanza.
+                    'totpCode': str(mintotp.totp(self._args[3]))
                 }
+                else:
+                    payload = {
+                        'method': 'TOTP',
+                        'totpCode': str(self._credentials.getTOTP())
+                        # Expected return from getTOTP():
+                        # import mintotp
+                        # return mintotp.totp(self.totp)
+                        # Where self.totp is the totp code given by Avanza.
+                    }
                 payload = json.dumps(payload)
                 header = self._header
                 header.update({'Content-Length': str(len(payload)), 'Cookie': 'AZAMFATRANSACTION='+transactionID})
@@ -271,7 +292,7 @@ class socketInteraction:
             print(response.text)
 
 socket = socketInteraction.__new__(socketInteraction)
-threading.Thread(name = "socketThread", target = socket.__init__).start()
+threading.Thread(name = "socketThread", target = socket.__init__, args = sys.argv).start()
 waitForConnection = True
 while waitForConnection:
     if socket.connected():

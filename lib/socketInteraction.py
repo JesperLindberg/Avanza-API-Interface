@@ -52,20 +52,19 @@ class socketInteraction:
                                             on_close = self._on_close,
                                             on_open = self._on_open)
 
-        self._create_files()
+        self._create_data_folder()
 
         self.socketThread = threading.Thread(name = str(self)+"_socketThread",
                                         target = self._socket.run_forever()
                                         )
+
+    def _reauth(self):
+        self._auth()
+        self._authSocket()
         
-    def _create_files(self):
+    def _create_data_folder(self):
         if not os.path.exists(self._pathToSaveData):
             os.mkdir(self._pathToSaveData)
-        for name in self._socketSubscriptions:
-            name = name.split('/')
-            file_ = self._pathToSaveData + str(datetime.date(datetime.now())) + '-' + name[1] + '-' + name[2]
-            if not os.path.isfile(file_):
-                open(file_, 'a').close()
 
     def connected(self):
         return self._authenticated
@@ -93,7 +92,7 @@ class socketInteraction:
                 txt.write(str(quote) + '\n')
                 txt.close()
             except:
-                self._create_files()
+                self._create_data_folder()
                 txt = open(file_, 'a')
                 txt.write(str(quote) + '\n')
                 txt.close()
@@ -233,7 +232,7 @@ class socketInteraction:
                     self._pushSubscriptionId    = json.loads(response.text).get('pushSubscriptionId')
                     self._customerId            = json.loads(response.text).get('customerId')
                     # Schedule reauth after timout limit minus one minute times 60 to get it in seconds.
-                    threading.Timer((self._authenticationTimeoutMinutes - 1 )*60, self._auth).start()
+                    threading.Timer((self._authenticationTimeoutMinutes - 1 )*60, self._reauth).start()
                     print("Authenticated!")
 
                 else:

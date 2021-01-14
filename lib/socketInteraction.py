@@ -76,7 +76,7 @@ class socketInteraction:
 
     def _on_message(self, msg):
         msg = json.loads(msg)[0]
-        print(msg + str(datetime.date(datetime.now())))
+        print(str(msg) + " " + str(datetime.date(datetime.now())))
         channel = msg.get('channel')
         if '/quotes/' in channel:
             quote = msg.get('data')
@@ -156,7 +156,7 @@ class socketInteraction:
 
     def _socket_send(self, data):
         data = json.dumps([data])
-        print(data + str(datetime.date(datetime.now())))
+        print(str(data) + " " + str(datetime.date(datetime.now())))
         self._socket.send(data)
         self._socketMessageCount += 1
 

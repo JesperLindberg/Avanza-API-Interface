@@ -156,6 +156,7 @@ class socketInteraction:
 
     def _socket_send(self, data):
         data = json.dumps([data])
+        print(data + str(datetime.date(datetime.now())))
         self._socket.send(data)
         self._socketMessageCount += 1
 

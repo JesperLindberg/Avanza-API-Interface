@@ -76,7 +76,7 @@ class socketInteraction:
 
     def _on_message(self, msg):
         msg = json.loads(msg)[0]
-        print(msg)
+        print(msg + str(datetime.date(datetime.now())))
         channel = msg.get('channel')
         if '/quotes/' in channel:
             quote = msg.get('data')

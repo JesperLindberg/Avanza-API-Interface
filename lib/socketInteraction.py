@@ -60,7 +60,7 @@ class socketInteraction:
 
     def _reauth(self):
         self._auth()
-        self._authSocket()
+        self._authSocket(True)
         
     def _create_data_folder(self):
         if not os.path.exists(self._pathToSaveData):
@@ -76,7 +76,7 @@ class socketInteraction:
 
     def _on_message(self, msg):
         msg = json.loads(msg)[0]
-        print(str(msg) + " " + str(datetime.date(datetime.now())))
+        print(str(msg) + " " + str(datetime.now().strftime("%H:%M:%S")))
         channel = msg.get('channel')
         if '/quotes/' in channel:
             quote = msg.get('data')
@@ -156,7 +156,7 @@ class socketInteraction:
 
     def _socket_send(self, data):
         data = json.dumps([data])
-        print(str(data) + " " + str(datetime.date(datetime.now())))
+        print(str(data) + " " + str(datetime.now().strftime("%H:%M:%S")))
         self._socket.send(data)
         self._socketMessageCount += 1
 

@@ -14,7 +14,7 @@ Implement logging to file.
 class socketInteraction:
 
     def __init__(self, *args):
-        self._args = args
+        self._args = args[0]
         try:
             self._credentials = credentials()
         except:
@@ -54,9 +54,10 @@ class socketInteraction:
 
         self._create_data_folder()
 
-        self.socketThread = threading.Thread(name = str(self)+"_socketThread",
-                                        target = self._socket.run_forever()
-                                        )
+        self._socket.run_forever()
+        #self.socketThread = threading.Thread(name = str(self)+"_socketThread",
+        #                                target = self._socket.run_forever()
+        #                                )
 
     def _reauth(self):
         self._auth()
@@ -147,13 +148,15 @@ class socketInteraction:
         # Also log this error!
         print('ERROR: \n')
         print(error)
+#        self.__init__()
     
     def _on_close(self):
         # Set class variables to NA/0/False
         print("WARNING: FUNCTION NOT IMPLEMENTED!")
         print(self._socket._get_close_args())
         print(self._socket.header())
-
+#        self.__init__()
+        
     def _socket_send(self, data):
         data = json.dumps([data])
         print(str(data) + " " + str(datetime.now().strftime("%H:%M:%S")))
@@ -218,7 +221,6 @@ class socketInteraction:
                 payload = json.dumps(payload)
                 header = self._header
                 header.update({'Content-Length': str(len(payload)), 'Cookie': 'AZAMFATRANSACTION='+transactionID})
-
                 response = requests.request('POST', paths.TOTP_PATH, headers=header, data=payload)
 
                 # Expected return: {"authenticationSession":"sessionID",
@@ -239,7 +241,10 @@ class socketInteraction:
                 else:
                     self._authenticated = False
                     print("Error: Failed to provied a valied TOTP!")
+                    print(str(payload))
+                    print(str(header))
                     print(response.text)
+#                    self._on_open()
             else:
                 self._authenticated = False
                 print('Error: 2FA not needed but should be required for Avanza. Report this issue to github.')
@@ -294,12 +299,4 @@ class socketInteraction:
         if response:
             print(response.text)
 
-socket = socketInteraction.__new__(socketInteraction)
-threading.Thread(name = "socketThread", target = socket.__init__, args = sys.argv).start()
-waitForConnection = True
-while waitForConnection:
-    if socket.connected():
-        waitForConnection = False
-
-#socket.getInspirationLists()
-#socket.getWatchlists()
+socket = socketInteraction(sys.argv)
